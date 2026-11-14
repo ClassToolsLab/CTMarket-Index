@@ -1,0 +1,58 @@
+name: Update classroom tools market
+
+on:
+  schedule:
+    # Refresh daily at 04:00 UTC (12:00 Beijing time).
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-class-toolkit-market
+  cancel-in-progress: true
+
+env:
+  MARKET_TOPIC: class-toolkit
+  MARKET_BRANCH: CTMarket-Index
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workflow sources
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build index
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/build_market.py \
+            --topic "$MARKET_TOPIC" \
+            --out "$RUNNER_TEMP/index.json"
+
+      - name: Publish data branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # The data branch contains only index.json: rebuild it as an orphan
+          # branch and force-push each run so sources and history stay out.
+          git checkout --orphan "$MARKET_BRANCH"
+          git rm -rf . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+
+          cp "$RUNNER_TEMP/index.json" index.json
+          git add index.json
+          git commit -m "market: refresh $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push --force origin "$MARKET_BRANCH"
