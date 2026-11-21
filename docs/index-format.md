@@ -1,7 +1,7 @@
 # index.json 格式
 
-市场索引是一份 UTF-8 编码的 JSON 文件，插件据此渲染「工具市场」列表。字段保持向后
-兼容，新增字段不会影响旧版插件。
+市场索引是一份 UTF-8 编码的 JSON 文件，插件据此渲染「工具市场」列表。`schema` 只在
+发生不兼容变更时递增。
 
 ## 示例
 
@@ -20,10 +20,19 @@
             "html_url": "https://github.com/owner/repo",
             "homepage": "",
             "stars": 12,
+            "forks": 3,
+            "open_issues": 1,
+            "watchers": 12,
+            "license": "MIT",
             "language": "C++",
             "topics": ["class-toolkit"],
+            "created_at": "2026-01-02T07:07:40Z",
             "updated_at": "2026-11-10T08:00:00Z",
-            "default_branch": "main"
+            "pushed_at": "2026-11-13T14:11:26Z",
+            "default_branch": "main",
+            "archived": false,
+            "size": 422,
+            "avatar_url": "https://avatars.githubusercontent.com/u/1?v=4"
         }
     ]
 }
@@ -50,10 +59,19 @@
 | `html_url`       | string   | 仓库主页地址                         |
 | `homepage`       | string   | 项目主页，可能为空                   |
 | `stars`          | integer  | GitHub 星数                          |
+| `forks`          | integer  | Fork 数量                            |
+| `open_issues`    | integer  | 未关闭的 issue 数量                  |
+| `watchers`       | integer  | watcher 数量                         |
+| `license`        | string   | SPDX 标识或许可证名称，可能为空       |
 | `language`       | string   | 主要语言，可能为空                   |
 | `topics`         | string[] | 仓库的 topic 列表                    |
+| `created_at`     | string   | 创建时间，UTC 的 ISO-8601 时间        |
 | `updated_at`     | string   | 最近更新时间，UTC 的 ISO-8601 时间   |
+| `pushed_at`      | string   | 最近推送时间，UTC 的 ISO-8601 时间   |
 | `default_branch` | string   | 默认分支名，可能为空，缺省视为 `main` |
+| `archived`       | boolean  | 仓库是否已归档                       |
+| `size`           | integer  | 仓库体积（KB，GitHub 口径）          |
+| `avatar_url`     | string   | 仓库所有者的头像地址                 |
 
 ## 使用建议
 

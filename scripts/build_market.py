@@ -31,6 +31,8 @@ from datetime import datetime, timezone
 API_ENDPOINT = "https://api.github.com/search/repositories"
 USER_AGENT = "ClassroomToolsMarket-indexer/1.0"
 MAX_RETRIES = 4
+# Bumped only for incompatible changes; new tool fields do not bump it.
+INDEX_SCHEMA = 1
 
 
 def log(message: str) -> None:
@@ -102,6 +104,8 @@ def fetch_tools(topic: str, token: str, limit: int) -> list[dict]:
 
         for item in items:
             owner = (item.get("owner") or {}).get("login", "")
+            owner_info = item.get("owner") or {}
+            license_info = item.get("license") or {}
             tools.append(
                 {
                     "full_name": item.get("full_name", ""),
@@ -111,10 +115,21 @@ def fetch_tools(topic: str, token: str, limit: int) -> list[dict]:
                     "html_url": item.get("html_url", ""),
                     "homepage": item.get("homepage") or "",
                     "stars": item.get("stargazers_count", 0),
+                    "forks": item.get("forks_count", 0),
+                    "open_issues": item.get("open_issues_count", 0),
+                    "watchers": item.get("watchers_count", 0),
+                    "license": license_info.get("spdx_id")
+                    or license_info.get("name")
+                    or "",
                     "language": item.get("language") or "",
                     "topics": item.get("topics") or [],
+                    "created_at": item.get("created_at", ""),
                     "updated_at": item.get("updated_at", ""),
+                    "pushed_at": item.get("pushed_at", ""),
                     "default_branch": item.get("default_branch") or "main",
+                    "archived": bool(item.get("archived", False)),
+                    "size": item.get("size", 0),
+                    "avatar_url": owner_info.get("avatar_url", ""),
                 }
             )
 
@@ -131,7 +146,7 @@ def fetch_tools(topic: str, token: str, limit: int) -> list[dict]:
 
 def build_index(tools: list[dict], topic: str) -> dict:
     return {
-        "schema": 1,
+        "schema": INDEX_SCHEMA,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "topic": topic,
         "count": len(tools),
